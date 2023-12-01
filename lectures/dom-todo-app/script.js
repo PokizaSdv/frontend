@@ -1,13 +1,13 @@
-const todos = [
+let todos = [
     {
         text: "Breakfast",
         status: "TODO",
-        id: crypto.randomUUID()
+        id: "12345"
     },
     {
         text: "Dinner",
         status: "TODO",
-        id: crypto.randomUUID()
+        id: "67890"
     }
 ];
 
@@ -19,26 +19,51 @@ const changeTodoStatus = (id, status) => {
     }
 };
 
-const ul = document.querySelector(".todos");
-let checkboxes = document.querySelectorAll('input[type="checkbox"]');
+const deleteTodo = (id) => {
+    todos = todos.filter((todo) => todo.id !== id);
+};
 
-const renderTodo = (text, id) => {
+const ul = document.querySelector(".todos");
+
+const renderTodo = ({ text, id, status }) => {
     const li = document.createElement("li");
     li.innerText = text;
-    li.setAttribute("data-todoId", id);
+
     const checkbox = document.createElement("input");
     checkbox.setAttribute("type", "checkbox");
-    li.appendChild(checkbox);
+    if (status === "done") {
+        li.style.textDecoration = "line-through";
+        checkbox.checked = true;
+    }
 
+    const closeIcon = document.createElement("span");
+    closeIcon.innerHTML = "&times;";
+    closeIcon.style.cursor = "pointer";
+
+    closeIcon.addEventListener("click", (e) => {
+        deleteTodo(id);
+        renderTodos();
+    });
+
+    checkbox.addEventListener("change", (e) => {
+        if (checkbox.checked) {
+            // parent.style.textDecoration = "line-through";
+            changeTodoStatus(id, "done");
+        } else {
+            //parent.style.textDecoration = "none";
+            changeTodoStatus(id, "todo");
+        }
+        renderTodos();
+    });
+    li.appendChild(checkbox);
+    li.appendChild(closeIcon);
     ul.appendChild(li);
-    checkboxes = document.querySelectorAll('input[type="checkbox"]');
 };
 
 const renderTodos = () => {
-    for (let i = 0; i < todos.length; i++) {
-        const todo = todos[i];
-
-        renderTodo(todo.text, todo.id);
+    ul.innerHTML = "";
+    for (const todo of todos) {
+        renderTodo(todo);
     }
 };
 renderTodos();
@@ -55,23 +80,7 @@ form.addEventListener("submit", (event) => {
         id: id
     };
     todos.push(todo);
-    renderTodo(textValue, id);
+    input.value = "";
+
+    renderTodos();
 });
-
-
-checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener("change", (e) => {
-        const parent = checkbox.parentElement;
-        const todoId = parent.getAttribute("data-todoId");
-
-        if (checkbox.checked) {
-            parent.style.textDecoration = "line-through";
-            changeTodoStatus(todoId, "done")
-        } else {
-            parent.style.textDecoration = "none";
-            changeTodoStatus(todoId, "todo")
-
-        }
-    });
-});
-console.log(todos);
